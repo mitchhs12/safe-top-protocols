@@ -49,6 +49,4 @@ Alternatively, Etherscan’s Labels API could be used, but it's a **paid Pro API
 
 ## 📝 Notes
 
-- **KuCoin (8,235 transactions)**: Interactions occur via a proxy contract. As a **centralized exchange**, it’s not considered a DeFi protocol and is excluded from rankings that compare only DeFi protocols.
-- **Protocols like Safe or ENS** are included for completeness even though they serve broader infrastructure purposes beyond just DeFi.
-# safe-top-protocols
+- **Protocols like Safe, KuCoin and ENS** are included for completeness even though they serve broader infrastructure purposes beyond just DeFi.
