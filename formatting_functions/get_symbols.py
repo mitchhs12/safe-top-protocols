@@ -10,8 +10,8 @@ from tqdm import tqdm
 load_dotenv()
 
 # ---  CONFIGURATION  ---
-INPUT_CSV = '../data/top_interacted_contracts_with_labels_and_types.csv'
-OUTPUT_CSV = '../data/top_interacted_contracts_with_labels_and_types_and_symbols.csv'
+INPUT_CSV = '../data/final_combined_2.csv'
+OUTPUT_CSV = '../data/final_combined_3.csv'
 ETHEREUM_RPC_URL = os.getenv('ETHEREUM_RPC_URL')
 
 # --- OPTIMIZATION SETTINGS ---

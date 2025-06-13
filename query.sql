@@ -1,8 +1,3 @@
--- This query is used to retrieve the top 100 most frequently called contracts from Safe wallets.
--- It does this by drilling down into any transaction that interacts with the Gnosis/Safe infrastructure contracts.
--- It then aggregates the results to get the top 100 most frequently called contracts.
--- Note: I did not filter all gnosis multisend contracts, just the ones that were used in the top 100.
-
 WITH gnosis_safe_contracts (address) AS (
     VALUES
         -- MultiSend Contracts
@@ -25,9 +20,7 @@ WITH gnosis_safe_contracts (address) AS (
         (0x34CFAC646F301356FAA8B21E94227E3583FE3F5F), -- GnosisSafeProxyFactory v1.1.1
         
         -- Core Utility Libraries & Modules
-        (0xA65387F16B013CF2AF4605AD8AA5EC25A2CBA3A2), -- SignMessageLib v1.3.0
-        (0x8629BCD3B8A90FD7247F0C0E0E1434C69DADCCA7), -- Create2ForwarderFactory (from Zodiac)
-        (0x87870BCA3F3FD6335C3F4CE8392D69350B4FA4E2)  -- Zodiac Delay Module (Proxy)
+        (0xA65387F16B013CF2AF4605AD8AA5EC25A2CBA3A2) -- SignMessageLib v1.3.0
 ),
 
 -- Step 1: Decode the immediate destination from all successful Safe transactions
@@ -41,9 +34,9 @@ initial_decoded_txs AS (
     WHERE method = 'execTransaction' AND success = true AND BYTEARRAY_LENGTH(input) >= 36 AND input IS NOT NULL
 ),
 
--- Step 2 (Branch A): Get all direct calls that DO NOT go to a Gnosis Safe contract.
--- These are counted as the final destination.
-direct_interactions AS (
+-- Get all direct calls that DO NOT go to a Gnosis Safe contract.
+-- These are counted as the final destination (regular transactions).
+regular_transactions AS (
     SELECT
         safe_wallet,
         tx_hash,
@@ -51,34 +44,6 @@ direct_interactions AS (
         destination_binary
     FROM initial_decoded_txs
     WHERE destination_binary NOT IN (SELECT address FROM gnosis_safe_contracts)
-),
-
--- Step 3: Identify the parent transactions that DID call a Gnosis Safe contract.
-gnosis_call_parent_txs AS (
-    SELECT
-        tx_hash,
-        safe_wallet
-    FROM initial_decoded_txs
-    WHERE destination_binary IN (SELECT address FROM gnosis_safe_contracts)
-),
-
--- Step 4 (Branch B): For the Gnosis-related transactions, find all successful internal calls they triggered.
-unpacked_interactions AS (
-    SELECT
-        p.safe_wallet,
-        t.tx_hash,
-        t.block_date,
-        t.to AS destination_binary -- The 'to' of the internal call is the true destination.
-    FROM safe_ethereum.transactions AS t
-    JOIN gnosis_call_parent_txs AS p ON t.tx_hash = p.tx_hash
-    WHERE t.success = true AND t.to IS NOT NULL AND t.to NOT IN (SELECT address FROM gnosis_safe_contracts)
-),
-
--- Step 5: Combine the direct calls and the unpacked calls
-all_final_interactions AS (
-    SELECT * FROM direct_interactions
-    UNION ALL
-    SELECT * FROM unpacked_interactions
 )
 
 -- Final Step: Aggregate the results for the final report
@@ -88,7 +53,7 @@ SELECT
     COUNT(DISTINCT safe_wallet) AS unique_safe_wallets,
     MIN(block_date) AS first_interaction_date,
     MAX(block_date) AS last_interaction_date
-FROM all_final_interactions
+FROM regular_transactions
 WHERE
     destination_binary IS NOT NULL
     AND destination_binary != 0x0000000000000000000000000000000000000000

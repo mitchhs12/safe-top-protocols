@@ -9,9 +9,10 @@ load_dotenv()
 
 # --- Configuration ---
 API_KEY = os.getenv('ETHERSCAN_API_KEY')
-INPUT_CSV = '../data/top_interacted_contracts.csv'
-OUTPUT_CSV = '../data/top_interacted_contracts_with_labels_and_types.csv'
+INPUT_CSV = '../data/final_combined_1.csv'
+OUTPUT_CSV = '../data/final_combined_2.csv'
 API_URL = 'https://api.etherscan.io/api'
+MAX_ROWS_TO_PROCESS = 100
 
 # --- ERC20 Standard Definition ---
 ERC20_REQUIRED_FUNCTIONS = {
@@ -105,9 +106,16 @@ def main():
     contract_types = []
     total = len(df)
     print(f"Found {total} addresses to process. Starting...")
+    has_destination_contract = 'destination_contract' in df.columns
 
     for index, row in df.iterrows():
-        address = row['destination_contract']
+        if index >= MAX_ROWS_TO_PROCESS:
+            print(f"Reached the maximum number of rows to process: {MAX_ROWS_TO_PROCESS}")
+            break
+
+        address = row['address']
+        if has_destination_contract:
+            address = row['destination_contract']
         print(f"({index + 1}/{total}) Processing: {address}")
         
         # This function now handles the proxy logic internally
@@ -119,10 +127,10 @@ def main():
         print(f"  -> Label: {info['label']}, Type: {info['type']}")
         
         time.sleep(0.25) # Main rate-limiting delay for Etherscan Free API
-
-    df['label'] = labels
-    df['contract_type'] = contract_types
-    df.to_csv(OUTPUT_CSV, index=False)
+        processed_df = df.iloc[:len(labels)].copy()
+        processed_df['label'] = labels
+        processed_df['contract_type'] = contract_types
+        processed_df.to_csv(OUTPUT_CSV, index=False)
     
     print(f"\nProcessing complete! Data saved to '{OUTPUT_CSV}'.")
 

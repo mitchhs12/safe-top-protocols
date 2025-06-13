@@ -7,8 +7,8 @@ def filter_erc20_tokens():
     and saves the result to a new CSV file.
     """
     # Define file paths
-    input_csv_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'final_data.csv')
-    output_csv_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'filtered_protocols.csv')
+    input_csv_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'final_combined_3.csv')
+    output_csv_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'final_combined_4.csv')
 
     # Read the CSV file into a pandas DataFrame
     try:

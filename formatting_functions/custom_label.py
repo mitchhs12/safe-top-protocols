@@ -8,10 +8,10 @@ load_dotenv()
 # --- CONFIGURATION ---
 
 # Define the paths to your input and output files
-MAIN_FILE_PATH = '../data/top_interacted_contracts_with_labels_and_types_and_symbols.csv'
+MAIN_FILE_PATH = '../data/final_combined.csv'
 ACCOUNTS_LABELS_PATH = '../eth_labels/accounts.csv'
 TOKENS_LABELS_PATH = '../eth_labels/tokens.csv'
-OUTPUT_FILE_PATH = '../data/final_data.csv'
+OUTPUT_FILE_PATH = '../data/final_combined_1.csv'
 
 # --- SCRIPT ---
 
@@ -32,7 +32,7 @@ def main():
         return
 
     # 2. Normalize addresses to lowercase for reliable matching
-    main_df['lookup_address'] = main_df['destination_contract'].str.lower()
+    main_df['lookup_address'] = main_df['address'].str.lower()
     accounts_df['address'] = accounts_df['address'].str.lower()
     tokens_df['address'] = tokens_df['address'].str.lower()
 
